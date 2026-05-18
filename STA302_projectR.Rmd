@@ -7,6 +7,9 @@ date: "2026-05-18"
 # Data cleaning
 ```{r}
 data <- read.csv("data/FinalProject_dataset.csv")
+dim(data)
+names(data)
+str(data)
 
 data_subset <- data[, c(
   "CURRENT.BUILDING.EVAL.SCORE",
@@ -18,13 +21,16 @@ data_subset <- data[, c(
   "BUILDING.EXTERIOR",
   "COMMON.AREA.PESTS"
 )]
+summary(data_subset)
+str(data_subset)
 
 data_subset[data_subset == "N/A"] <- NA
-
 clean_data <- na.omit(data_subset)
+dim(clean_data)
 
 clean_data$PROPERTY.TYPE <- as.factor(clean_data$PROPERTY.TYPE)
 clean_data$BUILDING.EXTERIOR <- as.numeric(clean_data$BUILDING.EXTERIOR)
+str(clean_data)
 ```
 # FinalProject_dataset
 ```{r}
