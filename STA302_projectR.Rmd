@@ -52,10 +52,10 @@ summary(model)
 confint(model)
 
 
-# Residual diagnostics 
+#
 par(mfrow = c(1, 3))
 
-#Residual vs. fitted 
+#Residual vs fitted 
 plot(model, which = 1) 
 
 #QQ plot
