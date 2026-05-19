@@ -63,7 +63,7 @@ plot(model, which = 2)
 #Standardized residual vs fitted
 plot(fitted(model),
      rstandard(model),
-     main = "Standarized Residual vs Fitted",
+     main = "Standardized Residual vs Fitted",
      xlab = "Fitted values",
      ylab = "Standardized residuals")
 
