@@ -52,7 +52,6 @@ summary(model)
 confint(model)
 
 
-#
 par(mfrow = c(1, 3))
 
 #Residual vs fitted 
