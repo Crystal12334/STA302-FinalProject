@@ -1,10 +1,38 @@
 ---
 title: "STA302_Project"
+author: "Qishan (Crystal) Wei, Alina Zhang, Jieen (Jennifer) Deng, Karen Hou, Pei-Lun Hsiao"
 output: html_document
-date: "2026-05-18"
+date: "2026-05-19"
 ---
 
-# Data cleaning
+# Background
+
+This project investigates factors associated with apartment building evaluation scores in Toronto rental properties using data from the Toronto Open Data Apartment Building Evaluation dataset.
+
+The study focuses on how building characteristics and maintenance-related maintenance factors are associated with current apartment building evaluation scores.
+
+# Research Question
+
+What building characteristics and maintenance-related factors are associated with higher apartment building evaluation scores in Toronto rental properties?
+
+# Literature Review
+
+Previous studies suggest that housing quality and residential satisfaction are associated with building age, maintenance conditions, and structural characteristics.
+
+Kutty (1999) found that housing adequacy is strongly associated with building characteristics and housing conditions. Zhong and Gou (2023) used RentSafeTO data to examine apartment building quality in Toronto and identified relationships between building conditions and residential quality.
+
+# Data Description
+
+The dataset used in this project is the Apartment Building Evaluation dataset from Toronto Open Data.\
+\
+The cleaned dataset contains 5304 apartment building observations after removing rows with missing values.
+
+# Data Cleaning
+
+The raw dataset was imported and cleaned before analysis. Relevant predictors and the response variable were selected based on findings from the literature review.
+
+Rows containing missing values were removed using complete-case analysis. Categorical variables were converted into factor format for regression analysis.
+
 ```{r}
 data <- read.csv("data/FinalProject_dataset.csv")
 dim(data)
@@ -21,8 +49,6 @@ data_subset <- data[, c(
   "BUILDING.EXTERIOR",
   "COMMON.AREA.PESTS"
 )]
-summary(data_subset)
-str(data_subset)
 
 data_subset[data_subset == "N/A"] <- NA
 clean_data <- na.omit(data_subset)
@@ -30,18 +56,24 @@ dim(clean_data)
 
 clean_data$PROPERTY.TYPE <- as.factor(clean_data$PROPERTY.TYPE)
 clean_data$BUILDING.EXTERIOR <- as.numeric(clean_data$BUILDING.EXTERIOR)
-str(clean_data)
 ```
 
 ```{r}
-
-# FinalProject_dataset
+# FinalProject_dataset output
 write.csv(clean_data,
           "output/cleaned_apartment_building_data.csv",
           row.names = FALSE)
+```
 
+# Linear Regression Analysis and Residual Analysis
 
-# Linear Regression Model
+A preliminary multiple linear regression model was fitted using predictors identified in the literature review.
+
+Residual diagnostic plots were used to assess the assumptions of linear regression, including approximate normality and linearity.
+
+```{r}
+
+# Linear Regression Model 
 model <- lm( CURRENT.BUILDING.EVAL.SCORE ~ PROPERTY.TYPE + YEAR.BUILT +
     CONFIRMED.UNITS + CONFIRMED.STOREYS + BUILDING.CLEANLINESS + 
     BUILDING.EXTERIOR + COMMON.AREA.PESTS,
@@ -51,7 +83,7 @@ summary(model)
 
 confint(model)
 
-
+#
 par(mfrow = c(1, 3))
 
 #Residual vs fitted 
@@ -90,3 +122,10 @@ numeric_vars <- clean_data[, c(
 
 ```
 
+# Preliminary Results
+
+Several predictors were significantly associated with apartment building evaluation scores.
+
+Building cleanliness, building exterior condition, and common area pests showed strong positive associations with current building evaluation scores.
+
+The model explained approximately 51% of the variation in apartment building evaluation scores.
