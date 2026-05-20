@@ -5,29 +5,30 @@ output: html_document
 date: "2026-05-19"
 ---
 
-# Background
+
+### Background
 
 This project investigates factors associated with apartment building evaluation scores in Toronto rental properties using data from the Toronto Open Data Apartment Building Evaluation dataset.
 
 The study focuses on how building characteristics and maintenance-related maintenance factors are associated with current apartment building evaluation scores.
 
-# Research Question
+### Research Question
 
 What building characteristics and maintenance-related factors are associated with higher apartment building evaluation scores in Toronto rental properties?
 
-# Literature Review
+### Literature Review
 
 Previous studies suggest that housing quality and residential satisfaction are associated with building age, maintenance conditions, and structural characteristics.
 
 Kutty (1999) found that housing adequacy is strongly associated with building characteristics and housing conditions. Zhong and Gou (2023) used RentSafeTO data to examine apartment building quality in Toronto and identified relationships between building conditions and residential quality.
 
-# Data Description
+### Data Description
 
 The dataset used in this project is the Apartment Building Evaluation dataset from Toronto Open Data.\
 \
 The cleaned dataset contains 5304 apartment building observations after removing rows with missing values.
 
-# Data Cleaning
+### Data Cleaning
 
 The raw dataset was imported and cleaned before analysis. Relevant predictors and the response variable were selected based on findings from the literature review.
 
@@ -36,8 +37,6 @@ Rows containing missing values were removed using complete-case analysis. Catego
 ```{r}
 data <- read.csv("data/FinalProject_dataset.csv")
 dim(data)
-names(data)
-str(data)
 
 data_subset <- data[, c(
   "CURRENT.BUILDING.EVAL.SCORE",
@@ -52,10 +51,13 @@ data_subset <- data[, c(
 
 data_subset[data_subset == "N/A"] <- NA
 clean_data <- na.omit(data_subset)
-dim(clean_data)
 
 clean_data$PROPERTY.TYPE <- as.factor(clean_data$PROPERTY.TYPE)
 clean_data$BUILDING.EXTERIOR <- as.numeric(clean_data$BUILDING.EXTERIOR)
+
+numeric_vars <- clean_data[, sapply(clean_data, is.numeric)]
+summary(numeric_vars)
+dim(clean_data)
 ```
 
 ```{r}
@@ -65,7 +67,7 @@ write.csv(clean_data,
           row.names = FALSE)
 ```
 
-# Linear Regression Analysis and Residual Analysis
+### Linear Regression Analysis and Residual Analysis
 
 A preliminary multiple linear regression model was fitted using predictors identified in the literature review.
 
@@ -122,7 +124,7 @@ numeric_vars <- clean_data[, c(
 
 ```
 
-# Preliminary Results
+### Preliminary Results
 
 Several predictors were significantly associated with apartment building evaluation scores.
 
