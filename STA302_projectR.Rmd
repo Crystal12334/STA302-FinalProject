@@ -5,7 +5,6 @@ output: html_document
 date: "2026-05-19"
 ---
 
-
 ### Background
 
 This project investigates factors associated with apartment building evaluation scores in Toronto rental properties using data from the Toronto Open Data Apartment Building Evaluation dataset.
@@ -131,3 +130,327 @@ Several predictors were significantly associated with apartment building evaluat
 Building cleanliness, building exterior condition, and common area pests showed strong positive associations with current building evaluation scores.
 
 The model explained approximately 51% of the variation in apartment building evaluation scores.
+
+### Model Selection
+
+```{r}
+# Check whether the response needs transformations
+
+# Histogram
+hist(clean_data$CURRENT.BUILDING.EVAL.SCORE)
+
+# Try to do the Box-Cox for Y (还不确定这个lambda图怎么解释)
+library(MASS)
+boxcox(model)
+# Apply lambda = 2 for Box-Cox transformation
+clean_data$Y_bc <- (clean_data$CURRENT.BUILDING.EVAL.SCORE^2 - 1)/2
+# Display new histogram after transformation
+hist(clean_data$Y_bc)
+
+```
+
+```{r}
+par(mfrow = c(2, 2))
+clean_data$LOG_UNITS <-
+log(clean_data$CONFIRMED.UNITS)
+hist(clean_data$LOG_UNITS)
+
+clean_data$LOG_STOREYS <-
+log(clean_data$CONFIRMED.STOREYS)
+hist(clean_data$LOG_STOREYS)
+```
+
+```{r}
+# Scatterplots of numerical predictors against response
+# with LOWESS smoothing lines
+
+response <- clean_data$CURRENT.BUILDING.EVAL.SCORE
+
+par(mfrow = c(2, 3))
+
+plot(clean_data$YEAR.BUILT,
+     response,
+     xlab = "Year Built",
+     ylab = "Current Building Evaluation Score",
+     main = "Score vs Year Built")
+lines(lowess(clean_data$YEAR.BUILT, response),
+      col = "red",
+      lwd = 2)
+
+plot(clean_data$CONFIRMED.UNITS,
+     response,
+     xlab = "Confirmed Units",
+     ylab = "Current Building Evaluation Score",
+     main = "Score vs Confirmed Units")
+lines(lowess(clean_data$CONFIRMED.UNITS, response),
+      col = "red",
+      lwd = 2)
+
+plot(clean_data$CONFIRMED.STOREYS,
+     response,
+     xlab = "Confirmed Storeys",
+     ylab = "Current Building Evaluation Score",
+     main = "Score vs Confirmed Storeys")
+lines(lowess(clean_data$CONFIRMED.STOREYS, response),
+      col = "red",
+      lwd = 2)
+
+plot(clean_data$BUILDING.CLEANLINESS,
+     response,
+     xlab = "Building Cleanliness",
+     ylab = "Current Building Evaluation Score",
+     main = "Score vs Building Cleanliness")
+lines(lowess(clean_data$BUILDING.CLEANLINESS, response),
+      col = "red",
+      lwd = 2)
+
+plot(clean_data$BUILDING.EXTERIOR,
+     response,
+     xlab = "Building Exterior",
+     ylab = "Current Building Evaluation Score",
+     main = "Score vs Building Exterior")
+lines(lowess(clean_data$BUILDING.EXTERIOR, response),
+      col = "red",
+      lwd = 2)
+
+plot(clean_data$COMMON.AREA.PESTS,
+     response,
+     xlab = "Common Area Pests",
+     ylab = "Current Building Evaluation Score",
+     main = "Score vs Common Area Pests")
+lines(lowess(clean_data$COMMON.AREA.PESTS, response),
+      col = "red",
+      lwd = 2)
+
+par(mfrow = c(1, 1))
+```
+
+```{r}
+# Transformation of STOREYS
+par(mfrow = c(1, 2))
+
+clean_data$LOG_STOREYS <-
+log(clean_data$CONFIRMED.STOREYS)
+hist(clean_data$LOG_STOREYS)
+
+plot(clean_data$LOG_STOREYS,
+     response,
+     xlab = "Confirmed Storeys",
+     ylab = "Current Building Evaluation Score",
+     main = "Score vs Confirmed Storeys")
+lines(lowess(clean_data$LOG_STOREYS, response),
+      col = "red",
+      lwd = 2)
+
+# Fit model with LOG_STOREYS
+model_log1 <- lm(
+CURRENT.BUILDING.EVAL.SCORE ~
+PROPERTY.TYPE +
+YEAR.BUILT +
+LOG_STOREYS +
+BUILDING.CLEANLINESS +
+BUILDING.EXTERIOR +
+COMMON.AREA.PESTS,
+data = clean_data
+)
+
+summary(model_log1)
+
+AIC(model)
+AIC(model_log1)
+
+BIC(model)
+BIC(model_log1)
+```
+
+```{r}
+# Transformation for UNITS
+par(mfrow = c(1, 2))
+
+clean_data$LOG_UNITS <-
+log(clean_data$CONFIRMED.UNITS)
+hist(clean_data$LOG_UNITS)
+
+plot(clean_data$LOG_UNITS,
+     response,
+     xlab = "Confirmed Units",
+     ylab = "Current Building Evaluation Score",
+     main = "Score vs Confirmed Units")
+lines(lowess(clean_data$LOG_UNITS, response),
+      col = "red",
+      lwd = 2)
+
+# Fit model with LOG_UNITS
+model_final <- lm(
+CURRENT.BUILDING.EVAL.SCORE ~
+PROPERTY.TYPE +
+YEAR.BUILT +
+LOG_UNITS +
+
+BUILDING.CLEANLINESS +
+BUILDING.EXTERIOR +
+COMMON.AREA.PESTS,
+data = clean_data
+)
+
+summary(model_final)
+
+# Compare AIC/BIC
+AIC(model)
+AIC(model_final)
+
+BIC(model)
+BIC(model_final)
+
+```
+
+```{r}
+par(mfrow = c(1, 2))
+
+clean_data$LOG_UNITS <-
+log(clean_data$CONFIRMED.UNITS)
+hist(clean_data$LOG_UNITS)
+
+clean_data$LOG_STOREYS <-
+log(clean_data$CONFIRMED.STOREYS)
+hist(clean_data$LOG_STOREYS)
+
+
+plot(clean_data$LOG_UNITS,
+     response,
+     xlab = "Confirmed Units",
+     ylab = "Current Building Evaluation Score",
+     main = "Score vs Confirmed Units")
+lines(lowess(clean_data$LOG_UNITS, response),
+      col = "red",
+      lwd = 2)
+
+plot(clean_data$LOG_STOREYS,
+     response,
+     xlab = "Confirmed Storeys",
+     ylab = "Current Building Evaluation Score",
+     main = "Score vs Confirmed Storeys")
+lines(lowess(clean_data$LOG_STOREYS, response),
+      col = "red",
+      lwd = 2)
+
+# Fit model with LOG_UNITS
+model_logs <- lm(
+CURRENT.BUILDING.EVAL.SCORE ~
+PROPERTY.TYPE +
+YEAR.BUILT +
+LOG_UNITS +
+LOG_STOREYS+
+BUILDING.CLEANLINESS +
+BUILDING.EXTERIOR +
+COMMON.AREA.PESTS,
+data = clean_data
+)
+
+summary(model_logs)
+
+# Compare AIC/BIC
+AIC(model)
+AIC(model_logs)
+
+BIC(model)
+BIC(model_logs)
+```
+
+```{r}
+# ---------------------------------------------------------
+# Problematic observations: outliers, leverage, influence
+# ---------------------------------------------------------
+
+# Number of observations
+n <- nrow(clean_data)
+
+# Number of predictors in the final model, excluding intercept
+p <- length(coef(model_final)) - 1
+
+
+# -------------------------
+# 1. Potential outliers
+# -------------------------
+
+# Studentized residuals are used to identify observations
+# whose response values are poorly explained by the model.
+student_resid <- rstudent(model_final)
+
+# Since this is a large dataset, use |studentized residual| > 3
+# as a practical cutoff for potential outliers.
+outlier_cutoff <- 3
+
+outlier_index <- which(abs(student_resid) > outlier_cutoff)
+
+length(outlier_index)
+
+# Inspect the flagged observations
+outlier_table <- clean_data[outlier_index, ]
+outlier_table$student_resid <- student_resid[outlier_index]
+
+outlier_table <- outlier_table[
+  order(abs(outlier_table$student_resid), decreasing = TRUE),
+]
+
+head(outlier_table, 10)
+summary(outlier_table)
+
+
+# -------------------------
+# 2. High leverage points
+# -------------------------
+
+# Leverage values measure how unusual the predictor values are.
+leverage <- hatvalues(model_final)
+
+# Course cutoff: hii > 2(p + 1) / n
+# where p is the number of predictors excluding the intercept.
+leverage_cutoff <- 2 * (p + 1) / n
+
+leverage_index <- which(leverage > leverage_cutoff)
+
+length(leverage_index)
+
+# Inspect high leverage observations
+leverage_table <- clean_data[leverage_index, ]
+leverage_table$leverage <- leverage[leverage_index]
+
+leverage_table <- leverage_table[
+  order(leverage_table$leverage, decreasing = TRUE),
+]
+
+head(leverage_table, 10)
+summary(leverage_table)
+
+
+# -------------------------
+# 3. Influential observations
+# -------------------------
+
+# Cook's distance measures how much an observation influences
+# the fitted regression model.
+cooks_d <- cooks.distance(model_final)
+
+# Common cutoff: Cook's D > 4/n
+cook_cutoff <- 4 / n
+
+cook_index <- which(cooks_d > cook_cutoff)
+
+length(cook_index)
+
+# Inspect influential observations
+cook_table <- clean_data[cook_index, ]
+cook_table$cooks_d <- cooks_d[cook_index]
+
+cook_table <- cook_table[
+  order(cook_table$cooks_d, decreasing = TRUE),
+]
+
+head(cook_table, 10)
+summary(cook_table)
+
+# Check whether any observation has extremely large influence
+summary(cooks_d)
+max(cooks_d)
+```
