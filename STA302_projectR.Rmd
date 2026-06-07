@@ -163,7 +163,10 @@ hist(clean_data$LOG_STOREYS)
 ```{r}
 # Scatterplots of numerical predictors against response
 # with LOWESS smoothing lines
+```
 
+
+```{r}
 response <- clean_data$CURRENT.BUILDING.EVAL.SCORE
 
 par(mfrow = c(2, 3))
@@ -223,6 +226,10 @@ lines(lowess(clean_data$COMMON.AREA.PESTS, response),
       lwd = 2)
 
 par(mfrow = c(1, 1))
+```
+
+
+```{r}
 ```
 
 ```{r}
@@ -453,4 +460,93 @@ summary(cook_table)
 # Check whether any observation has extremely large influence
 summary(cooks_d)
 max(cooks_d)
+
+outlier_index <- which(abs(rstudent(model_final)) > 3)
+leverage_index <- which(hatvalues(model_final) > 2*(p+1)/n)
+cook_index <- which(cooks.distance(model_final) > 4/n)
+
+# Intersection = truly problematic points
+problematic_index <- Reduce(intersect, list(outlier_index, leverage_index, cook_index))
+
+length(problematic_index)
+
+plot(hatvalues(model_final), rstudent(model_final),
+     xlab="Leverage", ylab="Studentized Residuals")
+
+abline(h=c(-3,3), col="red")
+abline(v=2*(p+1)/n, col="blue")
+
+# New Model
+clean_data_no_problem <- clean_data[-problematic_index, ]
+model_final_no_problem <- lm(
+  CURRENT.BUILDING.EVAL.SCORE ~ PROPERTY.TYPE +
+         YEAR.BUILT +
+         LOG_UNITS +
+         BUILDING.CLEANLINESS +
+         BUILDING.EXTERIOR +
+         COMMON.AREA.PESTS,
+  data = clean_data_no_problem
+)
+
+# Compare ACI BCI
+AIC(model)
+AIC(model_final_no_problem)
+
+BIC(model)
+BIC(model_final_no_problem)
+```
+
+
+```{r}
+# Plots of Final Model
+response <- clean_data_no_problem$CURRENT.BUILDING.EVAL.SCORE
+
+par(mfrow = c(2, 3))
+
+plot(clean_data_no_problem$YEAR.BUILT,
+     response,
+     xlab = "Year Built",
+     ylab = "Current Building Evaluation Score",
+     main = "Score vs Year Built")
+lines(lowess(clean_data_no_problem$YEAR.BUILT, response),
+      col = "red",
+      lwd = 2)
+
+plot(clean_data_no_problem$CONFIRMED.UNITS,
+     response,
+     xlab = "Confirmed Units",
+     ylab = "Current Building Evaluation Score",
+     main = "Score vs Confirmed Units")
+lines(lowess(clean_data_no_problem$CONFIRMED.UNITS, response),
+      col = "red",
+      lwd = 2)
+
+plot(clean_data_no_problem$BUILDING.CLEANLINESS,
+     response,
+     xlab = "Building Cleanliness",
+     ylab = "Current Building Evaluation Score",
+     main = "Score vs Building Cleanliness")
+lines(lowess(clean_data_no_problem$BUILDING.CLEANLINESS, response),
+      col = "red",
+      lwd = 2)
+
+plot(clean_data_no_problem$BUILDING.EXTERIOR,
+     response,
+     xlab = "Building Exterior",
+     ylab = "Current Building Evaluation Score",
+     main = "Score vs Building Exterior")
+lines(lowess(clean_data_no_problem$BUILDING.EXTERIOR, response),
+      col = "red",
+      lwd = 2)
+
+plot(clean_data_no_problem$COMMON.AREA.PESTS,
+     response,
+     xlab = "Common Area Pests",
+     ylab = "Current Building Evaluation Score",
+     main = "Score vs Common Area Pests")
+lines(lowess(clean_data_no_problem$COMMON.AREA.PESTS, response),
+      col = "red",
+      lwd = 2)
+
+par(mfrow = c(1, 1))
 ```
