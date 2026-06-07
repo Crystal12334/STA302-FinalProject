@@ -150,23 +150,9 @@ hist(clean_data$Y_bc)
 ```
 
 ```{r}
-par(mfrow = c(2, 2))
-clean_data$LOG_UNITS <-
-log(clean_data$CONFIRMED.UNITS)
-hist(clean_data$LOG_UNITS)
-
-clean_data$LOG_STOREYS <-
-log(clean_data$CONFIRMED.STOREYS)
-hist(clean_data$LOG_STOREYS)
-```
-
-```{r}
 # Scatterplots of numerical predictors against response
 # with LOWESS smoothing lines
-```
 
-
-```{r}
 response <- clean_data$CURRENT.BUILDING.EVAL.SCORE
 
 par(mfrow = c(2, 3))
@@ -228,17 +214,11 @@ lines(lowess(clean_data$COMMON.AREA.PESTS, response),
 par(mfrow = c(1, 1))
 ```
 
-
-```{r}
-```
-
 ```{r}
 # Transformation of STOREYS
 par(mfrow = c(1, 2))
-
 clean_data$LOG_STOREYS <-
 log(clean_data$CONFIRMED.STOREYS)
-hist(clean_data$LOG_STOREYS)
 
 plot(clean_data$LOG_STOREYS,
      response,
@@ -276,7 +256,6 @@ par(mfrow = c(1, 2))
 
 clean_data$LOG_UNITS <-
 log(clean_data$CONFIRMED.UNITS)
-hist(clean_data$LOG_UNITS)
 
 plot(clean_data$LOG_UNITS,
      response,
@@ -314,13 +293,6 @@ BIC(model_final)
 ```{r}
 par(mfrow = c(1, 2))
 
-clean_data$LOG_UNITS <-
-log(clean_data$CONFIRMED.UNITS)
-hist(clean_data$LOG_UNITS)
-
-clean_data$LOG_STOREYS <-
-log(clean_data$CONFIRMED.STOREYS)
-hist(clean_data$LOG_STOREYS)
 
 
 plot(clean_data$LOG_UNITS,
@@ -341,7 +313,7 @@ lines(lowess(clean_data$LOG_STOREYS, response),
       col = "red",
       lwd = 2)
 
-# Fit model with LOG_UNITS
+# Fit model with LOG_UNITS and LOG_STOREYS
 model_logs <- lm(
 CURRENT.BUILDING.EVAL.SCORE ~
 PROPERTY.TYPE +
@@ -494,8 +466,11 @@ AIC(model_final_no_problem)
 
 BIC(model)
 BIC(model_final_no_problem)
-```
 
+summary(model_final)
+
+summary(model_final_no_problem)
+```
 
 ```{r}
 # Plots of Final Model
