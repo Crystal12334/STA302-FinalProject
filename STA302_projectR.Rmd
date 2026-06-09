@@ -135,18 +135,44 @@ The model explained approximately 51% of the variation in apartment building eva
 
 ```{r}
 # Check whether the response needs transformations
+par(mfrow=c(2,2))
+plot(model)
 
-# Histogram
-hist(clean_data$CURRENT.BUILDING.EVAL.SCORE)
 
 # Try to do the Box-Cox for Y (还不确定这个lambda图怎么解释)
+par(mfrow=c(1,1))
 library(MASS)
 boxcox(model)
+
 # Apply lambda = 2 for Box-Cox transformation
 clean_data$Y_bc <- (clean_data$CURRENT.BUILDING.EVAL.SCORE^2 - 1)/2
-# Display new histogram after transformation
-hist(clean_data$Y_bc)
+model_bc <- lm(
+  Y_bc ~ PROPERTY.TYPE +
+    YEAR.BUILT +
+    CONFIRMED.UNITS +
+    CONFIRMED.STOREYS +
+    BUILDING.CLEANLINESS +
+    BUILDING.EXTERIOR +
+    COMMON.AREA.PESTS,
+  data = clean_data
+)
+par(mfrow=c(2,2))
+plot(model_bc)
 
+# Try to apply Log transformation
+clean_data$LOG_SCORE <- log(clean_data$CURRENT.BUILDING.EVAL.SCORE)
+model_log <- lm(
+  LOG_SCORE ~ PROPERTY.TYPE +
+    YEAR.BUILT +
+    CONFIRMED.UNITS +
+    CONFIRMED.STOREYS +
+    BUILDING.CLEANLINESS +
+    BUILDING.EXTERIOR +
+    COMMON.AREA.PESTS,
+  data = clean_data
+)
+par(mfrow=c(2,2))
+plot(model_log)
 ```
 
 ```{r}
@@ -217,15 +243,14 @@ par(mfrow = c(1, 1))
 ```{r}
 # Transformation of STOREYS
 par(mfrow = c(1, 2))
-clean_data$LOG_STOREYS <-
-log(clean_data$CONFIRMED.STOREYS)
+clean_data$LOG_STOREYS <- log(clean_data$CONFIRMED.STOREYS)
 
 plot(clean_data$LOG_STOREYS,
-     response,
+     clean_data$CURRENT.BUILDING.EVAL.SCORE,
      xlab = "Confirmed Storeys",
      ylab = "Current Building Evaluation Score",
      main = "Score vs Confirmed Storeys")
-lines(lowess(clean_data$LOG_STOREYS, response),
+lines(lowess(clean_data$LOG_STOREYS, clean_data$CURRENT.BUILDING.EVAL.SCORE),
       col = "red",
       lwd = 2)
 
@@ -258,11 +283,11 @@ clean_data$LOG_UNITS <-
 log(clean_data$CONFIRMED.UNITS)
 
 plot(clean_data$LOG_UNITS,
-     response,
+     clean_data$CURRENT.BUILDING.EVAL.SCORE,
      xlab = "Confirmed Units",
      ylab = "Current Building Evaluation Score",
      main = "Score vs Confirmed Units")
-lines(lowess(clean_data$LOG_UNITS, response),
+lines(lowess(clean_data$LOG_UNITS, clean_data$CURRENT.BUILDING.EVAL.SCORE),
       col = "red",
       lwd = 2)
 
@@ -296,20 +321,20 @@ par(mfrow = c(1, 2))
 
 
 plot(clean_data$LOG_UNITS,
-     response,
+     clean_data$CURRENT.BUILDING.EVAL.SCORE,
      xlab = "Confirmed Units",
      ylab = "Current Building Evaluation Score",
      main = "Score vs Confirmed Units")
-lines(lowess(clean_data$LOG_UNITS, response),
+lines(lowess(clean_data$LOG_UNITS, clean_data$CURRENT.BUILDING.EVAL.SCORE),
       col = "red",
       lwd = 2)
 
 plot(clean_data$LOG_STOREYS,
-     response,
+     clean_data$CURRENT.BUILDING.EVAL.SCORE,
      xlab = "Confirmed Storeys",
      ylab = "Current Building Evaluation Score",
      main = "Score vs Confirmed Storeys")
-lines(lowess(clean_data$LOG_STOREYS, response),
+lines(lowess(clean_data$LOG_STOREYS, clean_data$CURRENT.BUILDING.EVAL.SCORE),
       col = "red",
       lwd = 2)
 
@@ -334,6 +359,14 @@ AIC(model_logs)
 
 BIC(model)
 BIC(model_logs)
+
+library(car)
+vif(model_logs)
+
+cor(clean_data$CONFIRMED.UNITS,
+    clean_data$CONFIRMED.STOREYS)
+cor(log(clean_data$CONFIRMED.UNITS),
+    log(clean_data$CONFIRMED.STOREYS))
 ```
 
 ```{r}
@@ -473,55 +506,29 @@ summary(model_final_no_problem)
 ```
 
 ```{r}
-# Plots of Final Model
-response <- clean_data_no_problem$CURRENT.BUILDING.EVAL.SCORE
-
-par(mfrow = c(2, 3))
-
-plot(clean_data_no_problem$YEAR.BUILT,
-     response,
-     xlab = "Year Built",
-     ylab = "Current Building Evaluation Score",
-     main = "Score vs Year Built")
-lines(lowess(clean_data_no_problem$YEAR.BUILT, response),
-      col = "red",
-      lwd = 2)
-
-plot(clean_data_no_problem$CONFIRMED.UNITS,
-     response,
-     xlab = "Confirmed Units",
-     ylab = "Current Building Evaluation Score",
-     main = "Score vs Confirmed Units")
-lines(lowess(clean_data_no_problem$CONFIRMED.UNITS, response),
-      col = "red",
-      lwd = 2)
-
-plot(clean_data_no_problem$BUILDING.CLEANLINESS,
-     response,
-     xlab = "Building Cleanliness",
-     ylab = "Current Building Evaluation Score",
-     main = "Score vs Building Cleanliness")
-lines(lowess(clean_data_no_problem$BUILDING.CLEANLINESS, response),
-      col = "red",
-      lwd = 2)
-
-plot(clean_data_no_problem$BUILDING.EXTERIOR,
-     response,
-     xlab = "Building Exterior",
-     ylab = "Current Building Evaluation Score",
-     main = "Score vs Building Exterior")
-lines(lowess(clean_data_no_problem$BUILDING.EXTERIOR, response),
-      col = "red",
-      lwd = 2)
-
-plot(clean_data_no_problem$COMMON.AREA.PESTS,
-     response,
-     xlab = "Common Area Pests",
-     ylab = "Current Building Evaluation Score",
-     main = "Score vs Common Area Pests")
-lines(lowess(clean_data_no_problem$COMMON.AREA.PESTS, response),
-      col = "red",
-      lwd = 2)
-
+# Final model with log-transformed units
+model_final <- lm(
+  CURRENT.BUILDING.EVAL.SCORE ~
+    PROPERTY.TYPE +
+    YEAR.BUILT +
+    LOG_UNITS +
+    BUILDING.CLEANLINESS +
+    BUILDING.EXTERIOR +
+    COMMON.AREA.PESTS,
+  data = clean_data
+)
+summary(model_final)
+# Diagnostic plots for final model
+par(mfrow = c(2, 2))
+plot(model_final)
 par(mfrow = c(1, 1))
+
+# Actual vs fitted values
+plot(fitted(model_final),
+     clean_data$CURRENT.BUILDING.EVAL.SCORE,
+     xlab = "Fitted Values",
+     ylab = "Actual Building Evaluation Score",
+     main = "Actual vs Fitted Values")
+
+abline(0, 1, col = "red", lwd = 2)
 ```
