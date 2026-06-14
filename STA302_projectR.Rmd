@@ -59,6 +59,7 @@ summary(numeric_vars)
 dim(clean_data)
 ```
 
+
 ```{r}
 # FinalProject_dataset output
 write.csv(clean_data,
@@ -66,37 +67,23 @@ write.csv(clean_data,
           row.names = FALSE)
 ```
 
-### Data Description - Charts
-
-Charts for describing our response variable and predictors, including a bar chart for categorical variable, histograms for other predictors and response variable, and boxplot for the categorical variable vs. other variable. 
-
-```{r}
-response_variable <-colnames(data)[1]
-for (i in response_variable){
-hist(x=data[[i]],xlab = i, ylab="Frequency", main=paste("Frequency vs",i))
-}
-predictors <-colnames(data)[3:8]
-for (i in predictors){
-  hist(x=data[[i]],xlab = i, ylab="Frequency", main=paste("Frequency vs",i))
-}
-par(mfrow=c(3,2))
-library(ggplot2)
-ggplot(data, aes(x=as.factor(PROPERTY.TYPE),y=CURRENT.BUILDING.EVAL.SCORE))+geom_boxplot()+labs(x="PROPERTY.TYPE", y="CURRENT.BUILDING.EVAL.SCORE")
-library(ggplot2)
-ggplot(data, aes(x=as.factor(PROPERTY.TYPE),y=YEAR.BUILT))+geom_boxplot()+labs(x="PROPERTY.TYPE", y="YEAR.BUILT")
-library(ggplot2)
-ggplot(data, aes(x=as.factor(PROPERTY.TYPE),y=CONFIRMED.UNITS))+geom_boxplot()+labs(x="PROPERTY.TYPE", y="CONFIRMED.UNITS")
-library(ggplot2)
-ggplot(data, aes(x=as.factor(PROPERTY.TYPE),y=CONFIRMED.STOREYS))+geom_boxplot()+labs(x="PROPERTY.TYPE", y="CONFIRMED.STORES")
-library(ggplot2)
-ggplot(data, aes(x=as.factor(PROPERTY.TYPE),y=BUILDING.CLEANLINESS))+geom_boxplot()+labs(x="PROPERTY.TYPE", y="BUILDING.CLEANLINESS")
-library(ggplot2)
-ggplot(data, aes(x=as.factor(PROPERTY.TYPE),y=BUILDING.EXTERIOR))+geom_boxplot()+labs(x="PROPERTY.TYPE", y="BUILDING.EXTERIOR")
-library(ggplot2)
-ggplot(data, aes(x=as.factor(PROPERTY.TYPE),y=COMMON.AREA.PESTS))+geom_boxplot()+labs(x="PROPERTY.TYPE", y="COMMON.AREA.PESTS")
-library(ggplot2)
-ggplot(data, aes(x=as.factor(PROPERTY.TYPE)))+geom_bar()+labs(x="PROPERTY.TYPE", y="Frequency", title = "Bar Chart of PROPERTY.TYPE")
+```{r scatterplot-matrix, echo=FALSE, fig.width=10, fig.height=8, fig.cap="Scatterplot matrix for the response and numerical predictors."}
+pairs(
+  clean_data[, c(
+    "CURRENT.BUILDING.EVAL.SCORE",
+    "YEAR.BUILT",
+    "CONFIRMED.UNITS",
+    "CONFIRMED.STOREYS",
+    "BUILDING.CLEANLINESS",
+    "BUILDING.EXTERIOR",
+    "PROPERTY.TYPE",
+    "COMMON.AREA.PESTS"
+    
+  )],
+  main = "Scatterplot Matrix for Preliminary Model Variables"
+)
 ```
+
 
 ### Linear Regression Analysis and Residual Analysis
 
@@ -116,25 +103,12 @@ summary(model)
 
 confint(model)
 
-#
-par(mfrow = c(1, 3))
+# Diagnostic plots
+par(mfrow = c(2, 3), mar = c(4, 4, 3, 1))
 
-#Residual vs fitted 
-plot(model, which = 1) 
-
-#QQ plot
-plot(model, which = 2) 
-
-#Standardized residual vs fitted
-plot(fitted(model),
-     rstandard(model),
-     main = "Standardized Residual vs Fitted",
-     xlab = "Fitted values",
-     ylab = "Standardized residuals")
-
-abline(h = 0, col = "red")
-
-par(mfrow = c(1, 1))
+plot(model, which = 1)  # Residuals vs Fitted
+plot(model, which = 2)  # Normal Q-Q
+plot(model, which = 5)  # Residuals vs Leverage
 
 hist(
   rstandard(model),
@@ -144,6 +118,16 @@ hist(
   border = "white"
 )
 
+plot(
+  fitted(model),
+  rstandard(model),
+  main = "Standardized Residuals vs Fitted",
+  xlab = "Fitted Values",
+  ylab = "Standardized Residuals"
+)
+abline(h = 0, col = "red")
+
+par(mfrow = c(1, 1))
 
 numeric_vars <- clean_data[, c(
   "YEAR.BUILT",
@@ -167,44 +151,18 @@ The model explained approximately 51% of the variation in apartment building eva
 
 ```{r}
 # Check whether the response needs transformations
-par(mfrow=c(2,2))
-plot(model)
 
+# Histogram
+hist(clean_data$CURRENT.BUILDING.EVAL.SCORE)
 
 # Try to do the Box-Cox for Y (还不确定这个lambda图怎么解释)
-par(mfrow=c(1,1))
 library(MASS)
 boxcox(model)
-
 # Apply lambda = 2 for Box-Cox transformation
 clean_data$Y_bc <- (clean_data$CURRENT.BUILDING.EVAL.SCORE^2 - 1)/2
-model_bc <- lm(
-  Y_bc ~ PROPERTY.TYPE +
-    YEAR.BUILT +
-    CONFIRMED.UNITS +
-    CONFIRMED.STOREYS +
-    BUILDING.CLEANLINESS +
-    BUILDING.EXTERIOR +
-    COMMON.AREA.PESTS,
-  data = clean_data
-)
-par(mfrow=c(2,2))
-plot(model_bc)
+# Display new histogram after transformation
+hist(clean_data$Y_bc)
 
-# Try to apply Log transformation
-clean_data$LOG_SCORE <- log(clean_data$CURRENT.BUILDING.EVAL.SCORE)
-model_log <- lm(
-  LOG_SCORE ~ PROPERTY.TYPE +
-    YEAR.BUILT +
-    CONFIRMED.UNITS +
-    CONFIRMED.STOREYS +
-    BUILDING.CLEANLINESS +
-    BUILDING.EXTERIOR +
-    COMMON.AREA.PESTS,
-  data = clean_data
-)
-par(mfrow=c(2,2))
-plot(model_log)
 ```
 
 ```{r}
@@ -275,14 +233,15 @@ par(mfrow = c(1, 1))
 ```{r}
 # Transformation of STOREYS
 par(mfrow = c(1, 2))
-clean_data$LOG_STOREYS <- log(clean_data$CONFIRMED.STOREYS)
+clean_data$LOG_STOREYS <-
+log(clean_data$CONFIRMED.STOREYS)
 
 plot(clean_data$LOG_STOREYS,
-     clean_data$CURRENT.BUILDING.EVAL.SCORE,
+     response,
      xlab = "Confirmed Storeys",
      ylab = "Current Building Evaluation Score",
      main = "Score vs Confirmed Storeys")
-lines(lowess(clean_data$LOG_STOREYS, clean_data$CURRENT.BUILDING.EVAL.SCORE),
+lines(lowess(clean_data$LOG_STOREYS, response),
       col = "red",
       lwd = 2)
 
@@ -315,11 +274,11 @@ clean_data$LOG_UNITS <-
 log(clean_data$CONFIRMED.UNITS)
 
 plot(clean_data$LOG_UNITS,
-     clean_data$CURRENT.BUILDING.EVAL.SCORE,
+     response,
      xlab = "Confirmed Units",
      ylab = "Current Building Evaluation Score",
      main = "Score vs Confirmed Units")
-lines(lowess(clean_data$LOG_UNITS, clean_data$CURRENT.BUILDING.EVAL.SCORE),
+lines(lowess(clean_data$LOG_UNITS, response),
       col = "red",
       lwd = 2)
 
@@ -353,20 +312,20 @@ par(mfrow = c(1, 2))
 
 
 plot(clean_data$LOG_UNITS,
-     clean_data$CURRENT.BUILDING.EVAL.SCORE,
+     response,
      xlab = "Confirmed Units",
      ylab = "Current Building Evaluation Score",
      main = "Score vs Confirmed Units")
-lines(lowess(clean_data$LOG_UNITS, clean_data$CURRENT.BUILDING.EVAL.SCORE),
+lines(lowess(clean_data$LOG_UNITS, response),
       col = "red",
       lwd = 2)
 
 plot(clean_data$LOG_STOREYS,
-     clean_data$CURRENT.BUILDING.EVAL.SCORE,
+     response,
      xlab = "Confirmed Storeys",
      ylab = "Current Building Evaluation Score",
      main = "Score vs Confirmed Storeys")
-lines(lowess(clean_data$LOG_STOREYS, clean_data$CURRENT.BUILDING.EVAL.SCORE),
+lines(lowess(clean_data$LOG_STOREYS, response),
       col = "red",
       lwd = 2)
 
@@ -391,14 +350,6 @@ AIC(model_logs)
 
 BIC(model)
 BIC(model_logs)
-
-library(car)
-vif(model_logs)
-
-cor(clean_data$CONFIRMED.UNITS,
-    clean_data$CONFIRMED.STOREYS)
-cor(log(clean_data$CONFIRMED.UNITS),
-    log(clean_data$CONFIRMED.STOREYS))
 ```
 
 ```{r}
@@ -537,30 +488,169 @@ summary(model_final)
 summary(model_final_no_problem)
 ```
 
-```{r}
-# Final model with log-transformed units
-model_final <- lm(
-  CURRENT.BUILDING.EVAL.SCORE ~
-    PROPERTY.TYPE +
-    YEAR.BUILT +
-    LOG_UNITS +
-    BUILDING.CLEANLINESS +
-    BUILDING.EXTERIOR +
-    COMMON.AREA.PESTS,
-  data = clean_data
+### Robust and Bootstrap Sensitivity Analysis
+
+The final model was also assessed using robust methods. HC3
+heteroskedasticity-consistent standard errors were used to check whether the
+ordinary least squares inference was sensitive to non-constant residual
+variance. A robust regression was fitted as an additional sensitivity check
+for influential observations.
+
+```{r robust-analysis}
+# ---------------------------------------------------------
+# Robust inference for model_final
+# ---------------------------------------------------------
+
+# Compute the HC3 heteroskedasticity-consistent covariance matrix.
+# This base-R implementation avoids requiring sandwich and lmtest.
+X <- model.matrix(model_final)
+ols_residuals <- residuals(model_final)
+leverage_final <- hatvalues(model_final)
+
+hc3_adjusted_residuals <- ols_residuals / (1 - leverage_final)
+XTX_inverse <- solve(crossprod(X))
+
+vcov_hc3 <- XTX_inverse %*%
+  crossprod(X * hc3_adjusted_residuals) %*%
+  XTX_inverse
+
+robust_se <- sqrt(diag(vcov_hc3))
+robust_t <- coef(model_final) / robust_se
+robust_p <- 2 * pnorm(abs(robust_t), lower.tail = FALSE)
+
+robust_results <- data.frame(
+  Estimate = coef(model_final),
+  OLS_SE = sqrt(diag(vcov(model_final))),
+  HC3_Robust_SE = robust_se,
+  HC3_Lower_95 = coef(model_final) - qnorm(0.975) * robust_se,
+  HC3_Upper_95 = coef(model_final) + qnorm(0.975) * robust_se,
+  HC3_p_value = robust_p
 )
-summary(model_final)
-# Diagnostic plots for final model
-par(mfrow = c(2, 2))
-plot(model_final)
+
+round(robust_results, 4)
+
+# Robust regression sensitivity check using Huber weights.
+# Compare these coefficients with the OLS estimates above.
+robust_fit <- MASS::rlm(formula(model_final), data = clean_data)
+
+coefficient_comparison <- data.frame(
+  OLS = coef(model_final),
+  Robust_Regression = coef(robust_fit)
+)
+
+round(coefficient_comparison, 4)
+```
+
+Pairs bootstrap resampling was used to estimate coefficient uncertainty
+without relying on the normality assumption for the ordinary least squares
+estimates. Each bootstrap sample resamples entire observations, preserving the
+relationship between the response and predictors.
+
+```{r bootstrap-analysis}
+# ---------------------------------------------------------
+# Pairs bootstrap for model_final coefficients
+# ---------------------------------------------------------
+
+set.seed(302)
+
+bootstrap_data <- model.frame(model_final)
+coefficient_names <- names(coef(model_final))
+
+bootstrap_statistic <- function(data, indices) {
+  bootstrap_sample <- data[indices, , drop = FALSE]
+  bootstrap_fit <- lm(formula(model_final), data = bootstrap_sample)
+
+  # Keep the output order fixed if a bootstrap sample produces
+  # a rank-deficient fit.
+  bootstrap_coefficients <- setNames(
+    rep(NA_real_, length(coefficient_names)),
+    coefficient_names
+  )
+  fitted_coefficients <- coef(bootstrap_fit)
+  bootstrap_coefficients[names(fitted_coefficients)] <- fitted_coefficients
+  bootstrap_coefficients
+}
+
+bootstrap_results <- boot::boot(
+  data = bootstrap_data,
+  statistic = bootstrap_statistic,
+  R = 2000
+)
+
+bootstrap_se <- apply(bootstrap_results$t, 2, sd, na.rm = TRUE)
+bootstrap_ci <- t(apply(
+  bootstrap_results$t,
+  2,
+  quantile,
+  probs = c(0.025, 0.975),
+  na.rm = TRUE
+))
+
+bootstrap_summary <- data.frame(
+  Estimate = coef(model_final),
+  Bootstrap_SE = bootstrap_se,
+  Bootstrap_Lower_95 = bootstrap_ci[, 1],
+  Bootstrap_Upper_95 = bootstrap_ci[, 2]
+)
+
+round(bootstrap_summary, 4)
+```
+
+The HC3 and bootstrap intervals should be compared with the ordinary least
+squares results. Predictors whose confidence intervals remain away from zero
+across these methods have conclusions that are less sensitive to
+heteroskedasticity, influential observations, and distributional assumptions.
+
+```{r}
+# Plots of Final Model
+response <- clean_data_no_problem$CURRENT.BUILDING.EVAL.SCORE
+
+par(mfrow = c(2, 3))
+
+plot(clean_data_no_problem$YEAR.BUILT,
+     response,
+     xlab = "Year Built",
+     ylab = "Current Building Evaluation Score",
+     main = "Score vs Year Built")
+lines(lowess(clean_data_no_problem$YEAR.BUILT, response),
+      col = "red",
+      lwd = 2)
+
+plot(clean_data_no_problem$CONFIRMED.UNITS,
+     response,
+     xlab = "Confirmed Units",
+     ylab = "Current Building Evaluation Score",
+     main = "Score vs Confirmed Units")
+lines(lowess(clean_data_no_problem$CONFIRMED.UNITS, response),
+      col = "red",
+      lwd = 2)
+
+plot(clean_data_no_problem$BUILDING.CLEANLINESS,
+     response,
+     xlab = "Building Cleanliness",
+     ylab = "Current Building Evaluation Score",
+     main = "Score vs Building Cleanliness")
+lines(lowess(clean_data_no_problem$BUILDING.CLEANLINESS, response),
+      col = "red",
+      lwd = 2)
+
+plot(clean_data_no_problem$BUILDING.EXTERIOR,
+     response,
+     xlab = "Building Exterior",
+     ylab = "Current Building Evaluation Score",
+     main = "Score vs Building Exterior")
+lines(lowess(clean_data_no_problem$BUILDING.EXTERIOR, response),
+      col = "red",
+      lwd = 2)
+
+plot(clean_data_no_problem$COMMON.AREA.PESTS,
+     response,
+     xlab = "Common Area Pests",
+     ylab = "Current Building Evaluation Score",
+     main = "Score vs Common Area Pests")
+lines(lowess(clean_data_no_problem$COMMON.AREA.PESTS, response),
+      col = "red",
+      lwd = 2)
+
 par(mfrow = c(1, 1))
-
-# Actual vs fitted values
-plot(fitted(model_final),
-     clean_data$CURRENT.BUILDING.EVAL.SCORE,
-     xlab = "Fitted Values",
-     ylab = "Actual Building Evaluation Score",
-     main = "Actual vs Fitted Values")
-
-abline(0, 1, col = "red", lwd = 2)
 ```
