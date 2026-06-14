@@ -65,9 +65,9 @@ write.csv(clean_data,
           "output/cleaned_apartment_building_data.csv",
           row.names = FALSE)
 ```
-```{r}
 ### Data Description - Draft
-data <- read.csv("STA302/cleaned_apartment_building_data.csv")
+Draft for describing our response variable and predictors.
+```{r}
 response_variable <-colnames(data)[1]
 for (i in response_variable){
 hist(x=data[[i]],xlab = i, ylab="Frequency", main=paste("Frequency vs",i))
