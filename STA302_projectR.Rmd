@@ -66,9 +66,9 @@ write.csv(clean_data,
           row.names = FALSE)
 ```
 
-### Data Description - Chart
+### Data Description - Charts
 
-Chart for describing our response variable and predictors.
+Charts for describing our response variable and predictors, including a bar chart for categorical variable, histograms for other predictors and response variable, and boxplot for the categorical variable vs. other variable. 
 
 ```{r}
 response_variable <-colnames(data)[1]
