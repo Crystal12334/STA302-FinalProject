@@ -66,9 +66,9 @@ write.csv(clean_data,
           row.names = FALSE)
 ```
 
-### Data Description - Draft
+### Data Description - Chart
 
-Draft for describing our response variable and predictors.
+Chart for describing our response variable and predictors.
 
 ```{r}
 response_variable <-colnames(data)[1]
