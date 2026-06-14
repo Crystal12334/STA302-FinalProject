@@ -65,8 +65,11 @@ write.csv(clean_data,
           "output/cleaned_apartment_building_data.csv",
           row.names = FALSE)
 ```
+
 ### Data Description - Draft
+
 Draft for describing our response variable and predictors.
+
 ```{r}
 response_variable <-colnames(data)[1]
 for (i in response_variable){
