@@ -59,12 +59,42 @@ summary(numeric_vars)
 dim(clean_data)
 ```
 
-
 ```{r}
 # FinalProject_dataset output
 write.csv(clean_data,
           "output/cleaned_apartment_building_data.csv",
           row.names = FALSE)
+```
+
+```{r}
+# data discription-charts
+library(ggplot2)
+response_variable <-colnames(clean_data)[1]
+for (i in response_variable){
+hist(x=clean_data[[i]],xlab = i, ylab="Frequency", main=paste("Frequency vs",i))
+}
+predictors <-colnames(clean_data)[3:8]
+for (i in predictors){
+  hist(x=clean_data[[i]],xlab = i, ylab="Frequency", main=paste("Frequency vs",i))
+}
+par(mfrow=c(3,2))
+
+ggplot(clean_data, aes(x=as.factor(PROPERTY.TYPE),y=CURRENT.BUILDING.EVAL.SCORE))+geom_boxplot()+labs(x="PROPERTY.TYPE", y="CURRENT.BUILDING.EVAL.SCORE")
+
+ggplot(clean_data, aes(x=as.factor(PROPERTY.TYPE),y=YEAR.BUILT))+geom_boxplot()+labs(x="PROPERTY.TYPE", y="YEAR.BUILT")
+
+ggplot(clean_data, aes(x=as.factor(PROPERTY.TYPE),y=CONFIRMED.UNITS))+geom_boxplot()+labs(x="PROPERTY.TYPE", y="CONFIRMED.UNITS")
+
+ggplot(clean_data, aes(x=as.factor(PROPERTY.TYPE),y=CONFIRMED.STOREYS))+geom_boxplot()+labs(x="PROPERTY.TYPE", y="CONFIRMED.STORES")
+
+ggplot(clean_data, aes(x=as.factor(PROPERTY.TYPE),y=BUILDING.CLEANLINESS))+geom_boxplot()+labs(x="PROPERTY.TYPE", y="BUILDING.CLEANLINESS")
+
+ggplot(clean_data, aes(x=as.factor(PROPERTY.TYPE),y=BUILDING.EXTERIOR))+geom_boxplot()+labs(x="PROPERTY.TYPE", y="BUILDING.EXTERIOR")
+
+ggplot(clean_data, aes(x=as.factor(PROPERTY.TYPE),y=COMMON.AREA.PESTS))+geom_boxplot()+labs(x="PROPERTY.TYPE", y="COMMON.AREA.PESTS")
+
+ggplot(clean_data, aes(x=as.factor(PROPERTY.TYPE)))+geom_bar()+labs(x="PROPERTY.TYPE", y="Frequency", title = "Bar Chart of PROPERTY.TYPE")
+
 ```
 
 ```{r scatterplot-matrix, echo=FALSE, fig.width=10, fig.height=8, fig.cap="Scatterplot matrix for the response and numerical predictors."}
@@ -83,7 +113,6 @@ pairs(
   main = "Scatterplot Matrix for Preliminary Model Variables"
 )
 ```
-
 
 ### Linear Regression Analysis and Residual Analysis
 
@@ -155,7 +184,7 @@ The model explained approximately 51% of the variation in apartment building eva
 # Histogram
 hist(clean_data$CURRENT.BUILDING.EVAL.SCORE)
 
-# Try to do the Box-Cox for Y (还不确定这个lambda图怎么解释)
+# Try to do the Box-Cox for Y 
 library(MASS)
 boxcox(model)
 # Apply lambda = 2 for Box-Cox transformation
@@ -490,11 +519,7 @@ summary(model_final_no_problem)
 
 ### Robust and Bootstrap Sensitivity Analysis
 
-The final model was also assessed using robust methods. HC3
-heteroskedasticity-consistent standard errors were used to check whether the
-ordinary least squares inference was sensitive to non-constant residual
-variance. A robust regression was fitted as an additional sensitivity check
-for influential observations.
+The final model was also assessed using robust methods. HC3 heteroskedasticity-consistent standard errors were used to check whether the ordinary least squares inference was sensitive to non-constant residual variance. A robust regression was fitted as an additional sensitivity check for influential observations.
 
 ```{r robust-analysis}
 # ---------------------------------------------------------
@@ -541,10 +566,7 @@ coefficient_comparison <- data.frame(
 round(coefficient_comparison, 4)
 ```
 
-Pairs bootstrap resampling was used to estimate coefficient uncertainty
-without relying on the normality assumption for the ordinary least squares
-estimates. Each bootstrap sample resamples entire observations, preserving the
-relationship between the response and predictors.
+Pairs bootstrap resampling was used to estimate coefficient uncertainty without relying on the normality assumption for the ordinary least squares estimates. Each bootstrap sample resamples entire observations, preserving the relationship between the response and predictors.
 
 ```{r bootstrap-analysis}
 # ---------------------------------------------------------
@@ -596,10 +618,7 @@ bootstrap_summary <- data.frame(
 round(bootstrap_summary, 4)
 ```
 
-The HC3 and bootstrap intervals should be compared with the ordinary least
-squares results. Predictors whose confidence intervals remain away from zero
-across these methods have conclusions that are less sensitive to
-heteroskedasticity, influential observations, and distributional assumptions.
+The HC3 and bootstrap intervals should be compared with the ordinary least squares results. Predictors whose confidence intervals remain away from zero across these methods have conclusions that are less sensitive to heteroskedasticity, influential observations, and distributional assumptions.
 
 ```{r}
 # Plots of Final Model
