@@ -81,18 +81,6 @@ par(mfrow=c(3,2))
 
 ggplot(clean_data, aes(x=as.factor(PROPERTY.TYPE),y=CURRENT.BUILDING.EVAL.SCORE))+geom_boxplot()+labs(x="PROPERTY.TYPE", y="CURRENT.BUILDING.EVAL.SCORE")
 
-ggplot(clean_data, aes(x=as.factor(PROPERTY.TYPE),y=YEAR.BUILT))+geom_boxplot()+labs(x="PROPERTY.TYPE", y="YEAR.BUILT")
-
-ggplot(clean_data, aes(x=as.factor(PROPERTY.TYPE),y=CONFIRMED.UNITS))+geom_boxplot()+labs(x="PROPERTY.TYPE", y="CONFIRMED.UNITS")
-
-ggplot(clean_data, aes(x=as.factor(PROPERTY.TYPE),y=CONFIRMED.STOREYS))+geom_boxplot()+labs(x="PROPERTY.TYPE", y="CONFIRMED.STORES")
-
-ggplot(clean_data, aes(x=as.factor(PROPERTY.TYPE),y=BUILDING.CLEANLINESS))+geom_boxplot()+labs(x="PROPERTY.TYPE", y="BUILDING.CLEANLINESS")
-
-ggplot(clean_data, aes(x=as.factor(PROPERTY.TYPE),y=BUILDING.EXTERIOR))+geom_boxplot()+labs(x="PROPERTY.TYPE", y="BUILDING.EXTERIOR")
-
-ggplot(clean_data, aes(x=as.factor(PROPERTY.TYPE),y=COMMON.AREA.PESTS))+geom_boxplot()+labs(x="PROPERTY.TYPE", y="COMMON.AREA.PESTS")
-
 ggplot(clean_data, aes(x=as.factor(PROPERTY.TYPE)))+geom_bar()+labs(x="PROPERTY.TYPE", y="Frequency", title = "Bar Chart of PROPERTY.TYPE")
 
 ```
